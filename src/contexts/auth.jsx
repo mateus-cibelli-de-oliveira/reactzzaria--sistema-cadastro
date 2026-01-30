@@ -3,10 +3,9 @@ import t from "prop-types";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import {
   GithubAuthProvider,
-  signInWithRedirect,
+  signInWithPopup,
   onAuthStateChanged,
-  getRedirectResult,
-  signOut
+  signOut,
 } from "firebase/auth";
 import { authCadastro, dbCadastro } from "@/services/firebase";
 
@@ -16,23 +15,8 @@ function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Processa o resultado do redirect assim que o contexto monta
+  // Listener de autenticação (login e logout)
   useEffect(() => {
-    const handleRedirectResult = async () => {
-      try {
-        const result = await getRedirectResult(authCadastro);
-        if (result?.user) {
-          setUser(result.user);
-        }
-      } catch (error) {
-        console.error("Erro no processamento do redirect:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    handleRedirectResult();
-
     const unsubscribe = onAuthStateChanged(authCadastro, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
@@ -56,19 +40,19 @@ function AuthProvider({ children }) {
         name: user.displayName,
         role: "user",
       });
-    }
+    };
 
     createUserIfNotExists();
   }, [user]);
 
-  // Login com GitHub (força o logout antes)
+  // Login com GitHub usando popup
   const loginWithGitHub = useCallback(async () => {
     const provider = new GithubAuthProvider();
     try {
-      await signOut(authCadastro); // força o logout evitando conflito de tokens
-      await signInWithRedirect(authCadastro, provider);
+      const result = await signInWithPopup(authCadastro, provider);
+      setUser(result.user); // atualiza o usuário imediatamente
     } catch (error) {
-      console.error("Erro no login:", error);
+      console.error("Erro no login com popup:", error);
     }
   }, []);
 
@@ -82,6 +66,7 @@ function AuthProvider({ children }) {
     }
   }, []);
 
+  // Primeiro nome do usuário
   const firstName = useMemo(() => user?.displayName?.split(" ")[0] ?? "", [user]);
 
   return (

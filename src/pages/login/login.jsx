@@ -6,16 +6,6 @@ import MainLogo from "@/assets/logo-react-zzaria-cadastro.png";
 export default function Login() {
   const { loginWithGitHub } = useAuth();
 
-  const handleLogin = async () => {
-    console.log("ORIGIN:", window.location.origin);
-
-    try {
-      await loginWithGitHub();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   return (
     <Container>
       <Grid
@@ -31,7 +21,7 @@ export default function Login() {
         </Grid>
 
         <Grid item xs={12}>
-          <GitHubButton onClick={handleLogin}>
+          <GitHubButton onClick={loginWithGitHub}>
             Entrar com o GitHub
           </GitHubButton>
         </Grid>
