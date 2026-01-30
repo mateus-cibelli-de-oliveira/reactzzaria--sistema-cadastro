@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { LinearProgress } from "@mui/material";
 import { useAuth } from "@/hooks";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 import { HOME, LOGIN } from "@/routes";
 
@@ -30,7 +31,14 @@ function App() {
     <Suspense fallback={<LinearProgress />}>
       <Routes>
         <Route path={LOGIN} element={<Login />} />
-        <Route path={`${HOME}*`} element={<MainPage />} />
+        <Route
+          path={`${HOME}*`}
+          element={
+            <ProtectedRoute>
+              <MainPage />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </Suspense>
   );
