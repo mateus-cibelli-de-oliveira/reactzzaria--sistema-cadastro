@@ -16,9 +16,22 @@ function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Listener de autenticação (login e logout)
+  // Processa resultado do redirect assim que o contexto monta
   useEffect(() => {
-    getRedirectResult(authCadastro).catch(console.error);
+    const handleRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(authCadastro);
+        if (result?.user) {
+          setUser(result.user);
+        }
+      } catch (error) {
+        console.error("Erro no processamento do redirect:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    handleRedirectResult();
 
     const unsubscribe = onAuthStateChanged(authCadastro, (currentUser) => {
       setUser(currentUser);
@@ -26,13 +39,11 @@ function AuthProvider({ children }) {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [redirectAfterLogin]);
 
   // Criação do usuário no Firestore (se não existir)
   useEffect(() => {
     if (!user) return;
-
-    //console.log("Criando/verificando usuário:", user.uid);
 
     const createUserIfNotExists = async () => {
       const userRef = doc(dbCadastro, "users", user.uid);
@@ -43,17 +54,18 @@ function AuthProvider({ children }) {
       await setDoc(userRef, {
         email: user.email,
         name: user.displayName,
-        role: "user"
+        role: "user",
       });
     };
 
     createUserIfNotExists();
   }, [user]);
 
-  // Login com GitHub
+  // Login com GitHub (força o logout antes)
   const loginWithGitHub = useCallback(async () => {
     const provider = new GithubAuthProvider();
     try {
+      await signOut(authCadastro); // força o logout evitando conflito de tokens
       await signInWithRedirect(authCadastro, provider);
     } catch (error) {
       console.error("Erro no login:", error);
@@ -64,15 +76,13 @@ function AuthProvider({ children }) {
   const logout = useCallback(async () => {
     try {
       await signOut(authCadastro);
+      setUser(null);
     } catch (error) {
       console.error("Erro no logout:", error);
     }
   }, []);
 
-  // Nome formatado do usuário
-  const firstName = useMemo(() => {
-    return user?.displayName?.split(" ")[0] ?? "";
-  }, [user]);
+  const firstName = useMemo(() => user?.displayName?.split(" ")[0] ?? "", [user]);
 
   return (
     <AuthContext.Provider
@@ -90,7 +100,8 @@ function AuthProvider({ children }) {
 }
 
 AuthProvider.propTypes = {
-  children: t.node.isRequired
-}
+  children: t.node.isRequired,
+  redirectAfterLogin: t.string,
+};
 
-export { AuthProvider, AuthContext }
+export { AuthProvider, AuthContext };
