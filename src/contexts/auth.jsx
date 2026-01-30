@@ -2,13 +2,12 @@ import { createContext, useEffect, useState, useCallback, useMemo } from "react"
 import t from "prop-types";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import {
-  auth,
   GithubAuthProvider,
   signInWithRedirect,
   onAuthStateChanged,
   signOut,
-  db
-} from "@/services/firebase";
+} from "firebase/auth";
+import { auth, db } from "@/services/firebase";
 
 const AuthContext = createContext();
 
@@ -23,7 +22,7 @@ function AuthProvider({ children }) {
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return unsubscribe;
   }, []);
 
   // Criação do usuário no Firestore (se não existir)

@@ -1,11 +1,5 @@
 import { initializeApp } from "firebase/app";
-import {
-  getAuth,
-  GithubAuthProvider,
-  signInWithRedirect,
-  onAuthStateChanged,
-  signOut,
-} from "firebase/auth";
+import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 // Configuração Firebase
@@ -22,16 +16,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 // Instância de autenticação
-const auth = getAuth(app);
-
-// Exportações para uso na aplicação
-export {
-  auth,
-  GithubAuthProvider,
-  signInWithRedirect,
-  onAuthStateChanged,
-  signOut,
-}
+export const auth = getAuth(app);
 
 // Firestore da aplicação
 export const db = getFirestore(app);
