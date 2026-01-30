@@ -1,10 +1,19 @@
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { Button, Grid } from "@mui/material";
 import { useAuth } from "@/hooks";
 import MainLogo from "@/assets/logo-react-zzaria-cadastro.png";
 
 export default function Login() {
-  const { loginWithGitHub } = useAuth();
+  const { user, loginWithGitHub } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      // Redireciona automaticamente para a home quando o usuário loga
+      navigate("/", { replace: true });
+    }
+  }, [user, navigate]);
 
   return (
     <Container>
