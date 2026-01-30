@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import {
   collection, doc, getDocs, updateDoc, query, orderBy
 } from "firebase/firestore";
-import { db } from "@/services/firebase";
+import { dbCadastro } from "@/services/firebase";
 
 function useOrders() {
   const [orders, setOrders] = useState(null);
@@ -16,7 +16,7 @@ function useOrders() {
 
   const getOrders = useCallback(async () => {
     const ordersQuery = query(
-      collection(db, "orders"),
+      collection(dbCadastro, "orders"),
       orderBy("createdAt", "asc")
     );
     const querySnapshot = await getDocs(ordersQuery);
@@ -40,7 +40,7 @@ function useOrders() {
   }, [status]);
 
   const updateOrder = useCallback(async ({ orderId, status }) => {
-    const orderRef = doc(db, "orders", orderId);
+    const orderRef = doc(dbCadastro, "orders", orderId);
     await updateDoc(orderRef, { status });
     await getOrders();
   }, [getOrders]);

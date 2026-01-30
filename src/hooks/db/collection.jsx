@@ -9,7 +9,7 @@ import {
   doc,
   runTransaction
 } from "firebase/firestore";
-import { db } from "@/services/firebase";
+import { dbCadastro } from "@/services/firebase";
 
 function useCollection(collectionName) {
   const [data, setData] = useState(null);
@@ -17,7 +17,9 @@ function useCollection(collectionName) {
 
   const fetchCollectionData = useCallback(() => {
     const loadData = async () => {
-      const querySnapshot = await getDocs(collection(db, collectionName));
+      const querySnapshot = await getDocs(
+        collection(dbCadastro, collectionName)
+      );
       const docs = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -31,30 +33,30 @@ function useCollection(collectionName) {
 
   const add = useCallback(
     (payload) =>
-      addDoc(collection(db, collectionName), payload),
+      addDoc(collection(dbCadastro, collectionName), payload),
     [collectionName]
   );
 
   const edit = useCallback(
     async (id, data) => {
-      const docRef = doc(collection(db, collectionName), id);
+      const docRef = doc(collection(dbCadastro, collectionName), id);
       await updateDoc(docRef, data);
     },
     [collectionName]
   );
 
   const remove = useCallback(async (id) => {
-    await deleteDoc(doc(db, collectionName, id));
+    await deleteDoc(doc(dbCadastro, collectionName, id));
     fetchCollectionData();
   }, [collectionName, fetchCollectionData]);
 
   const removePizzaSize = useCallback(
     async (id) => {
-      const pizzaSizeRef = doc(db, "pizzasSizes", id);
-      const flavoursRef = collection(db, "pizzasFlavours");
+      const pizzaSizeRef = doc(dbCadastro, "pizzasSizes", id);
+      const flavoursRef = collection(dbCadastro, "pizzasFlavours");
 
       try {
-        await runTransaction(db, async (transaction) => {
+        await runTransaction(dbCadastro, async (transaction) => {
           const sizeSnap = await transaction.get(pizzaSizeRef);
 
           if (!sizeSnap.exists()) {
@@ -75,7 +77,7 @@ function useCollection(collectionName) {
             const { [id]: _, ...newValue } = data.value;
 
             transaction.update(
-              doc(db, "pizzasFlavours", flavourDoc.id),
+              doc(dbCadastro, "pizzasFlavours", flavourDoc.id),
               { value: newValue }
             );
           });

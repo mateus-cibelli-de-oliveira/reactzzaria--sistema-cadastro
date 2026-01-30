@@ -8,7 +8,7 @@ import {
   getRedirectResult,
   signOut,
 } from "firebase/auth";
-import { auth, db } from "@/services/firebase";
+import { authCadastro, dbCadastro } from "@/services/firebase";
 
 const AuthContext = createContext();
 
@@ -18,9 +18,9 @@ function AuthProvider({ children }) {
 
   // Listener de autenticação (login e logout)
   useEffect(() => {
-    getRedirectResult(auth).catch(console.error);
+    getRedirectResult(authCadastro).catch(console.error);
 
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(authCadastro, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
     });
@@ -35,7 +35,7 @@ function AuthProvider({ children }) {
     //console.log("Criando/verificando usuário:", user.uid);
 
     const createUserIfNotExists = async () => {
-      const userRef = doc(db, "users", user.uid);
+      const userRef = doc(dbCadastro, "users", user.uid);
       const userSnap = await getDoc(userRef);
 
       if (userSnap.exists()) return;
@@ -54,7 +54,7 @@ function AuthProvider({ children }) {
   const loginWithGitHub = useCallback(async () => {
     const provider = new GithubAuthProvider();
     try {
-      await signInWithRedirect(auth, provider);
+      await signInWithRedirect(authCadastro, provider);
     } catch (error) {
       console.error("Erro no login:", error);
     }
@@ -63,7 +63,7 @@ function AuthProvider({ children }) {
   // Logout
   const logout = useCallback(async () => {
     try {
-      await signOut(auth);
+      await signOut(authCadastro);
     } catch (error) {
       console.error("Erro no logout:", error);
     }
