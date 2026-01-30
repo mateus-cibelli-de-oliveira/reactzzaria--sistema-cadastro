@@ -7,6 +7,8 @@ export default function Login() {
   const { loginWithGitHub } = useAuth();
 
   const handleLogin = async () => {
+    console.log("ORIGIN:", window.location.origin);
+
     try {
       await loginWithGitHub();
     } catch (err) {
