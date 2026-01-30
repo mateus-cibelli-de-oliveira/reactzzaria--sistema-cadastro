@@ -2,7 +2,7 @@ import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { LinearProgress } from "@mui/material";
 import { useAuth } from "@/hooks";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { ProtectedRoute } from "@/components/protected-route";
 
 import { HOME, LOGIN } from "@/routes";
 
