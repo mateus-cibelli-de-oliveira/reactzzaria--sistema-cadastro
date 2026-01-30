@@ -16,7 +16,7 @@ function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Processa resultado do redirect assim que o contexto monta
+  // Processa o resultado do redirect assim que o contexto monta
   useEffect(() => {
     const handleRedirectResult = async () => {
       try {
@@ -39,7 +39,7 @@ function AuthProvider({ children }) {
     });
 
     return () => unsubscribe();
-  }, [redirectAfterLogin]);
+  }, []);
 
   // Criação do usuário no Firestore (se não existir)
   useEffect(() => {
