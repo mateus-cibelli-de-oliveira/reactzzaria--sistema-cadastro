@@ -18,25 +18,14 @@ function AuthProvider({ children }) {
 
   // Listener de autenticação (login e logout)
   useEffect(() => {
+    getRedirectResult(auth).catch(console.error);
+
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
     });
 
-    return unsubscribe;
-  }, []);
-
-  // Restaura a sessão após autenticação por redirect
-  useEffect(() => {
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result?.user) {
-          setUser(result.user);
-        }
-      })
-      .catch((error) => {
-        console.error("Erro no processamento do login por redirect:", error);
-      });
+    return () => unsubscribe();
   }, []);
 
   // Criação do usuário no Firestore (se não existir)
