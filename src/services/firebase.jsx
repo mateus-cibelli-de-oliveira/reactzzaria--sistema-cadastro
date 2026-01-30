@@ -2,7 +2,7 @@ import { initializeApp } from "firebase/app";
 import {
   getAuth,
   GithubAuthProvider,
-  signInWithPopup,
+  signInWithRedirect,
   onAuthStateChanged,
   signOut,
 } from "firebase/auth";
@@ -28,7 +28,7 @@ const auth = getAuth(app);
 export {
   auth,
   GithubAuthProvider,
-  signInWithPopup,
+  signInWithRedirect,
   onAuthStateChanged,
   signOut,
 }
