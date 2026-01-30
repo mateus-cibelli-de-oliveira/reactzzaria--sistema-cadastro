@@ -6,7 +6,7 @@ import {
   signInWithRedirect,
   onAuthStateChanged,
   getRedirectResult,
-  signOut,
+  signOut
 } from "firebase/auth";
 import { authCadastro, dbCadastro } from "@/services/firebase";
 
@@ -29,7 +29,7 @@ function AuthProvider({ children }) {
       } finally {
         setLoading(false);
       }
-    };
+    }
 
     handleRedirectResult();
 
@@ -56,7 +56,7 @@ function AuthProvider({ children }) {
         name: user.displayName,
         role: "user",
       });
-    };
+    }
 
     createUserIfNotExists();
   }, [user]);
@@ -100,8 +100,7 @@ function AuthProvider({ children }) {
 }
 
 AuthProvider.propTypes = {
-  children: t.node.isRequired,
-  redirectAfterLogin: t.string,
-};
+  children: t.node.isRequired
+}
 
 export { AuthProvider, AuthContext };
