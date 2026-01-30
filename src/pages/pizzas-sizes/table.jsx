@@ -4,7 +4,8 @@ import {
   TableCell,
   TableRow,
   TableBody,
-  Grid
+  Grid,
+  Box
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -22,8 +23,8 @@ import { singularOrPlural } from "@/utils";
 import { PIZZAS_SIZES, NEW, EDIT } from "@/routes";
 
 function TablePizzasSizes() {
-  const { 
-    data: pizzasSizes, removePizzaSize: remove 
+  const {
+    data: pizzasSizes, removePizzaSize: remove
   } = useCollection("pizzasSizes");
   const newSizePath = useMatch(`${PIZZAS_SIZES}${NEW}`);
   return (
@@ -102,6 +103,11 @@ function TablePizzasSizes() {
           ))}
         </TableBody>
       </Table>
+      {pizzasSizes?.length === 0 && (
+        <Box sx={{ p: 2 }}>
+          Não existem tamanhos de pizzas cadastrados.
+        </Box>
+      )}
     </TableContainer>
   );
 }

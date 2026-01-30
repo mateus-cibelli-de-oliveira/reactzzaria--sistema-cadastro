@@ -4,7 +4,7 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import {
   auth,
   GithubAuthProvider,
-  signInWithPopup,
+  signInWithRedirect,
   onAuthStateChanged,
   signOut,
   db
@@ -52,7 +52,7 @@ function AuthProvider({ children }) {
   const loginWithGitHub = useCallback(async () => {
     const provider = new GithubAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
+      await signInWithRedirect(auth, provider);
     } catch (error) {
       console.error("Erro no login:", error);
     }

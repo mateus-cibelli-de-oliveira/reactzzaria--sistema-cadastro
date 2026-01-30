@@ -1,19 +1,19 @@
 import styled from "styled-components";
 import { Button, Grid } from "@mui/material";
 import { useAuth } from "@/hooks";
-import MainLogo from "@/assets/logo-react-zzaria.svg";
+import MainLogo from "@/assets/logo-react-zzaria-cadastro.png";
 
 export default function Login() {
   const { loginWithGitHub } = useAuth();
 
   return (
     <Container>
-      <Grid 
-        container 
-        direction="column" 
-        alignItems="center" 
-        justifyContent="center" 
-        minHeight="100vh" 
+      <Grid
+        container
+        direction="column"
+        alignItems="center"
+        justifyContent="center"
+        minHeight="100vh"
         gap={4}
       >
         <Grid item xs={12}>

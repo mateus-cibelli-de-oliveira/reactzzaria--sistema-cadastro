@@ -5,6 +5,7 @@ import {
   TableRow,
   TableBody,
   Grid,
+  Box,
   Typography
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
@@ -123,6 +124,11 @@ function TablePizzasFlavours() {
           ))}
         </TableBody>
       </Table>
+      {pizzasFlavours?.length === 0 && (
+        <Box sx={{ p: 2 }}>
+          Não existem sabores de pizzas cadastrados.
+        </Box>
+      )}
     </TableContainer>
   );
 }
