@@ -5,6 +5,7 @@ import {
   GithubAuthProvider,
   signInWithRedirect,
   onAuthStateChanged,
+  getRedirectResult,
   signOut,
 } from "firebase/auth";
 import { auth, db } from "@/services/firebase";
@@ -23,6 +24,19 @@ function AuthProvider({ children }) {
     });
 
     return unsubscribe;
+  }, []);
+
+  // Restaura a sessão após autenticação por redirect
+  useEffect(() => {
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result?.user) {
+          setUser(result.user);
+        }
+      })
+      .catch((error) => {
+        console.error("Erro no processamento do login por redirect:", error);
+      });
   }, []);
 
   // Criação do usuário no Firestore (se não existir)
