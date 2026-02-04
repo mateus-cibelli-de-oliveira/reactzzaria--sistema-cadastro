@@ -10,6 +10,8 @@ import {
   updateProfile,
   signOut
 } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
+import { HOME } from "@/roots";
 import { authCadastro, dbCadastro } from "@/services/firebase";
 
 const AuthContext = createContext();
@@ -18,6 +20,8 @@ function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const navigate = useNavigate();
 
   // Listener global de autenticação
   useEffect(() => {
@@ -39,7 +43,7 @@ function AuthProvider({ children }) {
           setProfile(userSnap.data());
           console.log("[Auth] Perfil carregado:", userSnap.data());
         } else {
-          // Cria fallback se perfil não existir
+          // Cria fallback se o perfil não existir
           const fallbackProfile = {
             name: currentUser.displayName ?? "",
             email: currentUser.email,
@@ -49,6 +53,10 @@ function AuthProvider({ children }) {
           setProfile(fallbackProfile);
           console.log("[Auth] Perfil fallback criado:", fallbackProfile);
         }
+
+        // Navegação automática após a detecção do login
+        navigate(HOME, { replace: true });
+
       } catch (error) {
         console.error("[Auth] ERRO AO CARREGAR PERFIL DO USUÁRIO:", error);
         setProfile(null);
@@ -86,7 +94,7 @@ function AuthProvider({ children }) {
     }
   }, []);
 
-  // Login com GitHub ___
+  // Login com GitHub
   const loginWithGitHub = useCallback(async () => {
     try {
       const provider = new GithubAuthProvider();
@@ -98,7 +106,7 @@ function AuthProvider({ children }) {
       }
 
       console.log("[Auth] Login GitHub realizado:", result.user.email);
-      // O listener onAuthStateChanged atualiza user/profile automaticamente
+
     } catch (error) {
       console.error("[Auth] Erro no login com GitHub:", error);
       throw error;
@@ -116,8 +124,7 @@ function AuthProvider({ children }) {
       }
 
       console.log("[Auth] Login com email realizado:", result.user.email);
-      
-      // O listener onAuthStateChanged atualiza user/profile automaticamente
+
     } catch (error) {
       console.error("[Auth] Erro no login com email:", error);
       throw error;
