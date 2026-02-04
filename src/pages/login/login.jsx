@@ -147,7 +147,7 @@ export default function Login() {
               alignItems="center"
               gap={2}
             >
-              <LoginButton onClick={handleLogin}>
+              <LoginButton type="button" onClick={handleLogin}>
                 Entrar
               </LoginButton>
 
@@ -208,7 +208,7 @@ export default function Login() {
               alignItems="center"
               gap={2}
             >
-              <LoginButton onClick={handleRegister}>
+              <LoginButton type="button" onClick={handleRegister}>
                 Cadastrar usuário
               </LoginButton>
 
