@@ -1,8 +1,8 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import {
-  collection, doc, getDocs, updateDoc, query, orderBy
+  collection, doc, getDocs, updateDoc, query, orderBy, where
 } from "firebase/firestore";
-import { dbCadastro } from "@/services/firebase";
+import { authCadastro, dbCadastro } from "@/services/firebase";
 
 function useOrders() {
   const [orders, setOrders] = useState(null);
@@ -15,27 +15,37 @@ function useOrders() {
   }), []);
 
   const getOrders = useCallback(async () => {
+    const uid = authCadastro.currentUser?.uid;
+  
+    if (!uid) {
+      console.error("Usuário não autenticado");
+      return;
+    }
+  
     const ordersQuery = query(
       collection(dbCadastro, "orders"),
+      where("userId", "==", uid),
       orderBy("createdAt", "asc")
     );
+  
     const querySnapshot = await getDocs(ordersQuery);
+  
     const docs = querySnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
-
+  
     const initialStatus = Object.keys(status).reduce((acc, key) => {
       acc[key] = [];
       return acc;
     }, {});
-
+  
     const groupedOrders = docs.reduce((acc, order) => {
       const mainStatus = order.status || status.pending;
       acc[mainStatus].push(order);
       return acc;
     }, initialStatus);
-
+  
     setOrders(groupedOrders);
   }, [status]);
 
