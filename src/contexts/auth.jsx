@@ -11,7 +11,7 @@ import {
   signOut
 } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import { HOME } from "@/roots";
+import { HOME } from "@/routes";
 import { authCadastro, dbCadastro } from "@/services/firebase";
 
 const AuthContext = createContext();
