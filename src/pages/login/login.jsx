@@ -12,7 +12,7 @@ import {
   CancelButton
 } from "@/ui";
 import { useAuth } from "@/hooks";
-import MainLogo from "@/assets/logo-react-zzaria.svg";
+import MainLogo from "@/assets/logo-react-zzaria-cadastro.png";
 
 export default function Login() {
   const {
