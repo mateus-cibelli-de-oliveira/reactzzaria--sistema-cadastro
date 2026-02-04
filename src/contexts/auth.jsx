@@ -1,10 +1,4 @@
-import {
-  createContext,
-  useEffect,
-  useState,
-  useCallback,
-  useMemo
-} from "react";
+import { createContext, useEffect, useState, useCallback, useMemo } from "react";
 import t from "prop-types";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import {
@@ -27,82 +21,86 @@ function AuthProvider({ children }) {
 
   // Listener global de autenticação
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(
-      authCadastro,
-      async (currentUser) => {
-        try {
-          setUser(currentUser);
+    const unsubscribe = onAuthStateChanged(authCadastro, async (currentUser) => {
+      setUser(currentUser);
 
-          if (!currentUser) {
-            setProfile(null);
-            setLoading(false);
-            return;
-          }
-
-          const userRef = doc(dbCadastro, "users", currentUser.uid);
-          const userSnap = await getDoc(userRef);
-
-          if (userSnap.exists()) {
-            setProfile(userSnap.data());
-          } else {
-            const fallbackProfile = {
-              name: currentUser.displayName ?? "",
-              email: currentUser.email,
-              role: "user"
-            }
-
-            await setDoc(userRef, fallbackProfile);
-            setProfile(fallbackProfile);
-          }
-
-          setLoading(false);
-        } catch (error) {
-          console.error("ERRO AO CARREGAR PERFIL DO USUÁRIO:", error);
-          setProfile(null);
-          setLoading(false);
-        }
+      if (!currentUser) {
+        setProfile(null);
+        setLoading(false);
+        console.log("[Auth] Usuário deslogado");
+        return;
       }
-    );
+
+      try {
+        const userRef = doc(dbCadastro, "users", currentUser.uid);
+        const userSnap = await getDoc(userRef);
+
+        if (userSnap.exists()) {
+          setProfile(userSnap.data());
+          console.log("[Auth] Perfil carregado:", userSnap.data());
+        } else {
+          // Cria fallback se perfil não existir
+          const fallbackProfile = {
+            name: currentUser.displayName ?? "",
+            email: currentUser.email,
+            role: "user"
+          };
+          await setDoc(userRef, fallbackProfile);
+          setProfile(fallbackProfile);
+          console.log("[Auth] Perfil fallback criado:", fallbackProfile);
+        }
+      } catch (error) {
+        console.error("[Auth] ERRO AO CARREGAR PERFIL DO USUÁRIO:", error);
+        setProfile(null);
+      } finally {
+        setLoading(false);
+      }
+    });
 
     return () => unsubscribe();
   }, []);
 
-  // Garante usuário no Firestore (ex: login via GitHub)
-  useEffect(() => {
-    if (!user) return;
+  // Cadastro com e-mail e senha
+  const registerWithEmail = useCallback(async (name, email, password) => {
+    try {
+      const result = await createUserWithEmailAndPassword(authCadastro, email, password);
 
-    const createUserIfNotExists = async () => {
-      const userRef = doc(dbCadastro, "users", user.uid);
-      const userSnap = await getDoc(userRef);
-
-      if (userSnap.exists()) return;
-
-      const newProfile = {
-        email: user.email,
-        name: user.displayName ?? "",
-        role: "user"
+      if (!result.user) {
+        console.error("[Auth] ALERTA: usuário null ao criar cadastro", { name, email });
+        throw new Error("Usuário não autenticado ainda");
       }
 
+      await updateProfile(result.user, { displayName: name });
+
+      const newProfile = { name, email, role: "user" };
+      const userRef = doc(dbCadastro, "users", result.user.uid);
       await setDoc(userRef, newProfile);
+
+      setUser(result.user);
       setProfile(newProfile);
+
+      console.log("[Auth] Cadastro criado com sucesso:", newProfile);
+    } catch (error) {
+      console.error("[Auth] Erro no cadastro com email:", error);
+      throw error;
     }
+  }, []);
 
-    createUserIfNotExists();
-  }, [user]);
-
-  // Login com GitHub
+  // Login com GitHub ___
   const loginWithGitHub = useCallback(async () => {
     try {
-      await signOut(authCadastro);
-      setUser(null);
-      setProfile(null);
-
-      authCadastro.currentUser = null;
-  
       const provider = new GithubAuthProvider();
-      await signInWithPopup(authCadastro, provider);
+      const result = await signInWithPopup(authCadastro, provider);
+
+      if (!result.user) {
+        console.error("[Auth] ALERTA: usuário null no login GitHub");
+        throw new Error("Usuário não autenticado ainda");
+      }
+
+      console.log("[Auth] Login GitHub realizado:", result.user.email);
+      // O listener onAuthStateChanged atualiza user/profile automaticamente
     } catch (error) {
-      console.error("Erro no login com GitHub:", error);
+      console.error("[Auth] Erro no login com GitHub:", error);
       throw error;
     }
   }, []);
@@ -110,51 +108,18 @@ function AuthProvider({ children }) {
   // Login com e-mail e senha
   const loginWithEmail = useCallback(async (email, password) => {
     try {
-      await signOut(authCadastro);    
-      setUser(null);                    
-      setProfile(null);     
+      const result = await signInWithEmailAndPassword(authCadastro, email, password);
 
-      authCadastro.currentUser = null;   
-
-      await signInWithEmailAndPassword(authCadastro, email, password);
-    } catch (error) {
-      console.error("Erro no login com email:", error);
-      throw error;
-    }
-  }, []);
-
-  // Cadastro com e-mail e senha
-  const registerWithEmail = useCallback(async (name, email, password) => {
-    try {
-      const result = await createUserWithEmailAndPassword(
-        authCadastro,
-        email,
-        password
-      );
-  
-      // Garante que o usuário está definido
-      if (!result.user) throw new Error("Usuário não autenticado ainda");
-  
-      // Atualiza o displayName no Firebase Auth (PERSISTENTE)
-      await updateProfile(result.user, {
-        displayName: name
-      });
-  
-      // Cria o perfil no Firestore
-      const newProfile = {
-        name,
-        email,
-        role: "user"
+      if (!result.user) {
+        console.error("[Auth] ALERTA: usuário null no login com email", { email });
+        throw new Error("Usuário não autenticado ainda");
       }
-  
-      const userRef = doc(dbCadastro, "users", result.user.uid);
-      await setDoc(userRef, newProfile);
-  
-      // Estados locais
-      setUser(result.user);
-      setProfile(newProfile);
+
+      console.log("[Auth] Login com email realizado:", result.user.email);
+      
+      // O listener onAuthStateChanged atualiza user/profile automaticamente
     } catch (error) {
-      console.error("Erro no cadastro com email:", error);
+      console.error("[Auth] Erro no login com email:", error);
       throw error;
     }
   }, []);
@@ -163,18 +128,14 @@ function AuthProvider({ children }) {
   const logout = useCallback(async () => {
     try {
       await signOut(authCadastro);
-
       setUser(null);
       setProfile(null);
-
-      authCadastro.currentUser = null;
-
+      console.log("[Auth] Usuário deslogado");
     } catch (error) {
-      console.error("Erro no logout:", error);
+      console.error("[Auth] Erro no logout:", error);
     }
   }, []);
 
-  // Primeiro nome (vem do Firestore)
   const firstName = useMemo(() => {
     if (!profile?.name) return "";
     return profile.name.split(" ")[0];
