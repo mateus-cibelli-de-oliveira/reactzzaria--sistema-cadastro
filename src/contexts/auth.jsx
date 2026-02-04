@@ -113,7 +113,7 @@ function AuthProvider({ children }) {
       await signOut(authCadastro);    
       setUser(null);                    
       setProfile(null);     
-                  
+
       authCadastro.currentUser = null;   
 
       await signInWithEmailAndPassword(authCadastro, email, password);
@@ -131,22 +131,25 @@ function AuthProvider({ children }) {
         email,
         password
       );
-
+  
+      // Garante que o usuário está definido
+      if (!result.user) throw new Error("Usuário não autenticado ainda");
+  
       // Atualiza o displayName no Firebase Auth (PERSISTENTE)
       await updateProfile(result.user, {
         displayName: name
       });
-
+  
       // Cria o perfil no Firestore
       const newProfile = {
         name,
         email,
         role: "user"
       }
-
+  
       const userRef = doc(dbCadastro, "users", result.user.uid);
       await setDoc(userRef, newProfile);
-
+  
       // Estados locais
       setUser(result.user);
       setProfile(newProfile);
