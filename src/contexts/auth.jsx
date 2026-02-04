@@ -63,7 +63,7 @@ function AuthProvider({ children }) {
         }
       }
     );
-    
+
     return () => unsubscribe();
   }, []);
 
@@ -148,8 +148,12 @@ function AuthProvider({ children }) {
   const logout = useCallback(async () => {
     try {
       await signOut(authCadastro);
+
       setUser(null);
       setProfile(null);
+
+      authCadastro.currentUser = null;
+
     } catch (error) {
       console.error("Erro no logout:", error);
     }
