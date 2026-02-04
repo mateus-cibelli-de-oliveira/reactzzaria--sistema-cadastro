@@ -33,13 +33,13 @@ function Root() {
   return (
     <MuiThemeProvider theme={theme}>
       <ThemeProvider theme={theme}>
-        <AuthProvider>
-          <CssBaseline />
-          <GlobalStyle />
-          <BrowserRouter>
+        <BrowserRouter>
+          <AuthProvider>
+            <CssBaseline />
+            <GlobalStyle />
             <App />
-          </BrowserRouter>
-        </AuthProvider>
+          </AuthProvider>
+        </BrowserRouter>
       </ThemeProvider>
     </MuiThemeProvider>
   );
