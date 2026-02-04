@@ -16,7 +16,7 @@ import {
   updateProfile,
   signOut
 } from "firebase/auth";
-import { authPedidos, dbPedidos } from "@/services/firebase";
+import { authCadastro, dbCadastro } from "@/services/firebase";
 
 const AuthContext = createContext();
 
@@ -27,7 +27,7 @@ function AuthProvider({ children }) {
 
   // Listener global de autenticação
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(authPedidos, async (currentUser) => {
+    const unsubscribe = onAuthStateChanged(authCadastro, async (currentUser) => {
       setUser(currentUser);
 
       // Usuário deslogado
@@ -38,7 +38,7 @@ function AuthProvider({ children }) {
       }
 
       // Busca perfil no Firestore
-      const userRef = doc(dbPedidos, "users", currentUser.uid);
+      const userRef = doc(dbCadastro, "users", currentUser.uid);
       const userSnap = await getDoc(userRef);
 
       if (userSnap.exists()) {
@@ -66,7 +66,7 @@ function AuthProvider({ children }) {
     if (!user) return;
 
     const createUserIfNotExists = async () => {
-      const userRef = doc(dbPedidos, "users", user.uid);
+      const userRef = doc(dbCadastro, "users", user.uid);
       const userSnap = await getDoc(userRef);
 
       if (userSnap.exists()) return;
@@ -88,7 +88,7 @@ function AuthProvider({ children }) {
   const loginWithGitHub = useCallback(async () => {
     try {
       const provider = new GithubAuthProvider();
-      await signInWithPopup(authPedidos, provider);
+      await signInWithPopup(authCadastro, provider);
     } catch (error) {
       console.error("Erro no login com GitHub:", error);
       throw error;
@@ -99,7 +99,7 @@ function AuthProvider({ children }) {
   const loginWithEmail = useCallback(async (email, password) => {
     try {
       await signInWithEmailAndPassword(
-        authPedidos,
+        authCadastro,
         email,
         password
       );
@@ -113,7 +113,7 @@ function AuthProvider({ children }) {
   const registerWithEmail = useCallback(async (name, email, password) => {
     try {
       const result = await createUserWithEmailAndPassword(
-        authPedidos,
+        authCadastro,
         email,
         password
       );
@@ -130,7 +130,7 @@ function AuthProvider({ children }) {
         role: "user"
       };
 
-      const userRef = doc(dbPedidos, "users", result.user.uid);
+      const userRef = doc(dbCadastro, "users", result.user.uid);
       await setDoc(userRef, newProfile);
 
       // Estados locais
@@ -146,7 +146,7 @@ function AuthProvider({ children }) {
   // Logout
   const logout = useCallback(async () => {
     try {
-      await signOut(authPedidos);
+      await signOut(authCadastro);
       setUser(null);
       setProfile(null);
     } catch (error) {
