@@ -27,37 +27,43 @@ function AuthProvider({ children }) {
 
   // Listener global de autenticação
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(authCadastro, async (currentUser) => {
-      setUser(currentUser);
+    const unsubscribe = onAuthStateChanged(
+      authCadastro,
+      async (currentUser) => {
+        try {
+          setUser(currentUser);
 
-      // Usuário deslogado
-      if (!currentUser) {
-        setProfile(null);
-        setLoading(false);
-        return;
-      }
+          if (!currentUser) {
+            setProfile(null);
+            setLoading(false);
+            return;
+          }
 
-      // Busca perfil no Firestore
-      const userRef = doc(dbCadastro, "users", currentUser.uid);
-      const userSnap = await getDoc(userRef);
+          const userRef = doc(dbCadastro, "users", currentUser.uid);
+          const userSnap = await getDoc(userRef);
 
-      if (userSnap.exists()) {
-        setProfile(userSnap.data());
-      } else {
-        // Fallback (caso extremo)
-        const fallbackProfile = {
-          name: currentUser.displayName ?? "",
-          email: currentUser.email,
-          role: "user"
+          if (userSnap.exists()) {
+            setProfile(userSnap.data());
+          } else {
+            const fallbackProfile = {
+              name: currentUser.displayName ?? "",
+              email: currentUser.email,
+              role: "user"
+            }
+
+            await setDoc(userRef, fallbackProfile);
+            setProfile(fallbackProfile);
+          }
+
+          setLoading(false);
+        } catch (error) {
+          console.error("ERRO AO CARREGAR PERFIL DO USUÁRIO:", error);
+          setProfile(null);
+          setLoading(false);
         }
-
-        await setDoc(userRef, fallbackProfile);
-        setProfile(fallbackProfile);
       }
-
-      setLoading(false);
-    });
-
+    );
+    
     return () => unsubscribe();
   }, []);
 
@@ -74,12 +80,12 @@ function AuthProvider({ children }) {
       const newProfile = {
         email: user.email,
         name: user.displayName ?? "",
-        role: "user",
-      };
+        role: "user"
+      }
 
       await setDoc(userRef, newProfile);
       setProfile(newProfile);
-    };
+    }
 
     createUserIfNotExists();
   }, [user]);
@@ -98,11 +104,7 @@ function AuthProvider({ children }) {
   // Login com email e senha
   const loginWithEmail = useCallback(async (email, password) => {
     try {
-      await signInWithEmailAndPassword(
-        authCadastro,
-        email,
-        password
-      );
+      await signInWithEmailAndPassword(authCadastro, email, password);
     } catch (error) {
       console.error("Erro no login com email:", error);
       throw error;
@@ -120,7 +122,7 @@ function AuthProvider({ children }) {
 
       // Atualiza o displayName no Firebase Auth (PERSISTENTE)
       await updateProfile(result.user, {
-        displayName: name,
+        displayName: name
       });
 
       // Cria o perfil no Firestore
@@ -128,7 +130,7 @@ function AuthProvider({ children }) {
         name,
         email,
         role: "user"
-      };
+      }
 
       const userRef = doc(dbCadastro, "users", result.user.uid);
       await setDoc(userRef, newProfile);
@@ -136,7 +138,6 @@ function AuthProvider({ children }) {
       // Estados locais
       setUser(result.user);
       setProfile(newProfile);
-
     } catch (error) {
       console.error("Erro no cadastro com email:", error);
       throw error;
