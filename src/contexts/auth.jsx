@@ -93,6 +93,12 @@ function AuthProvider({ children }) {
   // Login com GitHub
   const loginWithGitHub = useCallback(async () => {
     try {
+      await signOut(authCadastro);
+      setUser(null);
+      setProfile(null);
+
+      authCadastro.currentUser = null;
+  
       const provider = new GithubAuthProvider();
       await signInWithPopup(authCadastro, provider);
     } catch (error) {
@@ -101,9 +107,15 @@ function AuthProvider({ children }) {
     }
   }, []);
 
-  // Login com email e senha
+  // Login com e-mail e senha
   const loginWithEmail = useCallback(async (email, password) => {
     try {
+      await signOut(authCadastro);    
+      setUser(null);                    
+      setProfile(null);     
+                  
+      authCadastro.currentUser = null;   
+
       await signInWithEmailAndPassword(authCadastro, email, password);
     } catch (error) {
       console.error("Erro no login com email:", error);
