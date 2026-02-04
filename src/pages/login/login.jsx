@@ -1,40 +1,223 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import styled from "styled-components";
-import { Button, Grid } from "@mui/material";
+import {
+  Grid,
+  TextField,
+  Link,
+} from "@mui/material";
+import {
+  GitHubButton,
+  EmailButton,
+  LoginButton,
+  CancelButton
+} from "@/ui";
 import { useAuth } from "@/hooks";
-import MainLogo from "@/assets/logo-react-zzaria-cadastro.png";
+import MainLogo from "@/assets/logo-react-zzaria.svg";
 
 export default function Login() {
-  const { user, loginWithGitHub } = useAuth();
-  const navigate = useNavigate();
+  const {
+    loginWithGitHub,
+    loginWithEmail,
+    registerWithEmail
+  } = useAuth();
 
-  useEffect(() => {
-    if (user) {
-      // Redireciona automaticamente para a home quando o usuário loga
-      navigate("/", { replace: true });
+  // controle de tela
+  const [mode, setMode] = useState("initial"); // initial | login | register
+
+  // campos comuns
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  // campos de cadastro
+  const [name, setName] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Login com email e senha
+  const handleLogin = async () => {
+    try {
+      await loginWithEmail(email, password);
+    } catch (error) {
+      console.error("Erro ao realizar login:", error);
     }
-  }, [user, navigate]);
+  }
+
+  // Cadastro de usuário
+  const handleRegister = async () => {
+    if (password !== confirmPassword) {
+      console.error("As senhas não conferem");
+      return;
+    }
+
+    try {
+      await registerWithEmail(name, email, password);
+    } catch (error) {
+      console.error("Erro ao cadastrar usuário:", error);
+    }
+  }
+
+  // Reseta formulário e volta para tela inicial
+  const handleCancel = () => {
+    setMode("initial");
+    setEmail("");
+    setPassword("");
+    setName("");
+    setConfirmPassword("");
+  }
 
   return (
     <Container>
       <Grid
         container
         direction="column"
-        alignItems="center"
+        alignItems="stretch"
         justifyContent="center"
         minHeight="100vh"
         gap={4}
       >
-        <Grid item xs={12}>
+        <Grid
+          item
+          xs={12}
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+        >
           <Logo src={MainLogo} alt="Logo" />
         </Grid>
 
-        <Grid item xs={12}>
-          <GitHubButton onClick={loginWithGitHub}>
-            Entrar com o GitHub
-          </GitHubButton>
-        </Grid>
+        {mode === "initial" && (
+          <>
+            <Grid item xs={12}>
+              <GitHubButton onClick={loginWithGitHub}>
+                Entrar com o GitHub
+              </GitHubButton>
+            </Grid>
+
+            <Grid
+              item
+              xs={12}
+              width="100%"
+              display="flex"
+              flexDirection="column"
+              alignItems="flex-start"
+              gap={2}
+            >
+              <EmailButton onClick={() => setMode("login")}>
+                Fazer login
+              </EmailButton>
+
+              <Link
+                component="button"
+                underline="none"
+                onClick={() => setMode("register")}
+              >
+                Ainda não tem cadastro?
+              </Link>
+            </Grid>
+          </>
+        )}
+
+        {mode === "login" && (
+          <>
+            <Grid item xs={12} width="100%">
+              <TextField
+                label="E-mail"
+                type="email"
+                fullWidth
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </Grid>
+
+            <Grid item xs={12} width="100%">
+              <TextField
+                label="Senha"
+                type="password"
+                fullWidth
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </Grid>
+
+            <Grid
+              item
+              xs={12}
+              width="100%"
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+              gap={2}
+            >
+              <LoginButton onClick={handleLogin}>
+                Entrar
+              </LoginButton>
+
+              <CancelButton onClick={handleCancel}>
+                Cancelar
+              </CancelButton>
+            </Grid>
+          </>
+        )}
+
+        {mode === "register" && (
+          <>
+            <Grid item xs={12} width="100%">
+              <TextField
+                label="Nome completo"
+                fullWidth
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </Grid>
+
+            <Grid item xs={12} width="100%">
+              <TextField
+                label="E-mail"
+                type="email"
+                fullWidth
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </Grid>
+
+            <Grid item xs={12} width="100%">
+              <TextField
+                label="Senha"
+                type="password"
+                fullWidth
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </Grid>
+
+            <Grid item xs={12} width="100%">
+              <TextField
+                label="Confirmar senha"
+                type="password"
+                fullWidth
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </Grid>
+
+            <Grid
+              item
+              xs={12}
+              width="100%"
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+              gap={2}
+            >
+              <LoginButton onClick={handleRegister}>
+                Cadastrar usuário
+              </LoginButton>
+
+              <CancelButton onClick={handleCancel}>
+                Cancelar
+              </CancelButton>
+            </Grid>
+          </>
+        )}
       </Grid>
     </Container>
   );
@@ -43,25 +226,16 @@ export default function Login() {
 const Container = styled.div`
   padding: ${({ theme }) => theme.spacing(3)}px;
   width: 100%;
+  max-width: 420px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: 40px;
 `;
 
 const Logo = styled.img`
   width: 100%;
-  max-width: 250px;
-`;
-
-const GitHubButton = styled(Button).attrs({
-  variant: "contained",
-  fullWidth: true,
-})`
-  && {
-    font-size: ${({ theme }) => theme.typography.h5.fontSize};
-    padding: ${({ theme }) => theme.spacing(2)}px;
-    text-transform: none;
-  }
+  max-width: 350px;
+  margin-bottom: 10px;
 `;
