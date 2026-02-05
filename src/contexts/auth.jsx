@@ -8,8 +8,9 @@ import { HOME } from "@/routes.jsx";
 import { authCadastro, dbCadastro } from "@/services/firebase";
 
 import { loginWithGitHub } from "./github-auth";
-import { loginWithEmail } from "./email-auth";
-import { registerWithEmail as registerWithEmailService } from "./email-auth";
+import {
+  loginWithEmail, registerWithEmail as registerWithEmailService
+} from "./email-auth";
 
 /**
  * AuthContext
@@ -58,7 +59,7 @@ function AuthProvider({ children }) {
           setProfile(userSnap.data());
           console.log("[Auth] Perfil carregado:", userSnap.data());
         } else {
-          // Perfil fallback caso o usuário exista no Auth mas ainda não tenha documento no Firestore.
+          // Se o usuário existir no Auth, mas não tiver documento no Firestore.
           const fallbackProfile = {
             name: currentUser.displayName ?? "",
             email: currentUser.email,
@@ -83,7 +84,7 @@ function AuthProvider({ children }) {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [navigate]);
 
   /**
    * registerWithEmail
@@ -168,6 +169,6 @@ function AuthProvider({ children }) {
 
 AuthProvider.propTypes = {
   children: t.node.isRequired
-};
+}
 
 export { AuthProvider, AuthContext }
