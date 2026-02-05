@@ -120,6 +120,7 @@ export default function Login() {
           <>
             <Grid item xs={12} width="100%">
               <TextField
+                autoFocus
                 label="E-mail"
                 type="email"
                 fullWidth
@@ -162,6 +163,7 @@ export default function Login() {
           <>
             <Grid item xs={12} width="100%">
               <TextField
+                autoFocus
                 label="Nome completo"
                 fullWidth
                 value={name}

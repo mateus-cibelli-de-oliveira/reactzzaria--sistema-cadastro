@@ -5,7 +5,7 @@ import {
   ThemeProvider as MuiThemeProvider,
   createTheme,
 } from "@mui/material/styles";
-import { AuthProvider } from "@/contexts";
+import { AuthProvider, OrderProvider } from "@/contexts";
 import App from "@/app";
 
 const theme = createTheme({
@@ -35,9 +35,11 @@ function Root() {
       <ThemeProvider theme={theme}>
         <BrowserRouter>
           <AuthProvider>
-            <CssBaseline />
-            <GlobalStyle />
-            <App />
+            <OrderProvider>
+              <CssBaseline />
+              <GlobalStyle />
+              <App />
+            </OrderProvider>
           </AuthProvider>
         </BrowserRouter>
       </ThemeProvider>

@@ -1,19 +1,24 @@
 import { createContext, useEffect, useState, useCallback, useMemo } from "react";
 import t from "prop-types";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import {
-  GithubAuthProvider,
-  signInWithPopup,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  onAuthStateChanged,
-  updateProfile,
-  signOut
-} from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+
 import { HOME } from "@/routes.jsx";
 import { authCadastro, dbCadastro } from "@/services/firebase";
 
+import { loginWithGitHub } from "./github-auth";
+import { loginWithEmail } from "./email-auth";
+import { registerWithEmail as registerWithEmailService } from "./email-auth";
+
+/**
+ * AuthContext
+ *
+ * Este é o contexto principal de autenticação do sistema.
+ * Ele é responsável por manter o usuário logado disponível globalmente,
+ * carregar o perfil do Firestore e disponibilizar funções como login,
+ * cadastro e logout para toda a aplicação.
+ */
 const AuthContext = createContext();
 
 function AuthProvider({ children }) {
@@ -23,7 +28,17 @@ function AuthProvider({ children }) {
 
   const navigate = useNavigate();
 
-  // Listener global de autenticação
+  /**
+   * Listener global de autenticação
+   *
+   * Este useEffect fica "escutando" mudanças no login do Firebase.
+   * Sempre que o usuário loga ou desloga, o onAuthStateChanged dispara.
+   *
+   * Aqui é onde o sistema decide:
+   * - se o usuário saiu, limpar tudo
+   * - se o usuário entrou, carregar o perfil no Firestore
+   * - se o perfil não existir, criar um perfil inicial automaticamente
+   */
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(authCadastro, async (currentUser) => {
       setUser(currentUser);
@@ -43,18 +58,20 @@ function AuthProvider({ children }) {
           setProfile(userSnap.data());
           console.log("[Auth] Perfil carregado:", userSnap.data());
         } else {
-          // Cria fallback se o perfil não existir
+          // Perfil fallback caso o usuário exista no Auth mas ainda não tenha documento no Firestore.
           const fallbackProfile = {
             name: currentUser.displayName ?? "",
             email: currentUser.email,
             role: "user"
           };
+
           await setDoc(userRef, fallbackProfile);
           setProfile(fallbackProfile);
+
           console.log("[Auth] Perfil fallback criado:", fallbackProfile);
         }
 
-        // Navegação automática após a detecção do login
+        // Após detectar o login, envia o usuário para a rota principal.
         navigate(HOME, { replace: true });
 
       } catch (error) {
@@ -68,70 +85,46 @@ function AuthProvider({ children }) {
     return () => unsubscribe();
   }, []);
 
-  // Cadastro com e-mail e senha
+  /**
+   * registerWithEmail
+   *
+   * Esta função é a ponte entre o "service" (email-auth.jsx) e o contexto.
+   *
+   * O arquivo email-auth.jsx cria o usuário e salva no Firestore,
+   * mas quem controla o estado global da aplicação é o AuthProvider.
+   *
+   * Por isso, aqui nós chamamos o registerWithEmailService e,
+   * assim que ele retorna, atualizamos o user e o profile na hora.
+   *
+   * Isso evita aquele problema clássico onde o usuário cadastra,
+   * mas o nome só aparece depois de recarregar a página.
+   */
   const registerWithEmail = useCallback(async (name, email, password) => {
     try {
-      const result = await createUserWithEmailAndPassword(authCadastro, email, password);
+      const { user, profile } = await registerWithEmailService(
+        name,
+        email,
+        password
+      );
 
-      if (!result.user) {
-        console.error("[Auth] ALERTA: usuário null ao criar cadastro", { name, email });
-        throw new Error("Usuário não autenticado ainda");
-      }
+      setUser(user);
+      setProfile(profile);
 
-      await updateProfile(result.user, { displayName: name });
+      console.log("[Auth] Cadastro criado com sucesso:", profile);
 
-      const newProfile = { name, email, role: "user" };
-      const userRef = doc(dbCadastro, "users", result.user.uid);
-      await setDoc(userRef, newProfile);
-
-      setUser(result.user);
-      setProfile(newProfile);
-
-      console.log("[Auth] Cadastro criado com sucesso:", newProfile);
+      return { user, profile };
     } catch (error) {
       console.error("[Auth] Erro no cadastro com email:", error);
       throw error;
     }
   }, []);
 
-  // Login com GitHub
-  const loginWithGitHub = useCallback(async () => {
-    try {
-      const provider = new GithubAuthProvider();
-      const result = await signInWithPopup(authCadastro, provider);
-
-      if (!result.user) {
-        console.error("[Auth] ALERTA: usuário null no login GitHub");
-        throw new Error("Usuário não autenticado ainda");
-      }
-
-      console.log("[Auth] Login GitHub realizado:", result.user.email);
-
-    } catch (error) {
-      console.error("[Auth] Erro no login com GitHub:", error);
-      throw error;
-    }
-  }, []);
-
-  // Login com e-mail e senha
-  const loginWithEmail = useCallback(async (email, password) => {
-    try {
-      const result = await signInWithEmailAndPassword(authCadastro, email, password);
-
-      if (!result.user) {
-        console.error("[Auth] ALERTA: usuário null no login com email", { email });
-        throw new Error("Usuário não autenticado ainda");
-      }
-
-      console.log("[Auth] Login com email realizado:", result.user.email);
-
-    } catch (error) {
-      console.error("[Auth] Erro no login com email:", error);
-      throw error;
-    }
-  }, []);
-
-  // Logout
+  /**
+   * logout
+   *
+   * Faz o logout do usuário e limpa os estados internos.
+   * É basicamente a função que encerra a sessão dentro do sistema.
+   */
   const logout = useCallback(async () => {
     try {
       await signOut(authCadastro);
@@ -143,6 +136,13 @@ function AuthProvider({ children }) {
     }
   }, []);
 
+  /**
+   * firstName
+   *
+   * Extrai apenas o primeiro nome do usuário.
+   * Isso é útil para mostrar algo mais amigável na interface,
+   * como "Olá, Mateus" em vez do nome completo.
+   */
   const firstName = useMemo(() => {
     if (!profile?.name) return "";
     return profile.name.split(" ")[0];
@@ -168,6 +168,6 @@ function AuthProvider({ children }) {
 
 AuthProvider.propTypes = {
   children: t.node.isRequired
-}
+};
 
 export { AuthProvider, AuthContext }
