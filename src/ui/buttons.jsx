@@ -34,9 +34,11 @@ export const LoginButton = styled(Button).attrs({
 `;
 
 export const CancelButton = styled(Button).attrs({
-  variant: "text",
+  variant: "outlined",
+  fullWidth: true,
 })`
   && {
+    padding: ${({ theme }) => theme.spacing(2)}px;
     text-transform: none;
   }
 `;
