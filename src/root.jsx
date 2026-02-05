@@ -5,27 +5,27 @@ import {
   ThemeProvider as MuiThemeProvider,
   createTheme,
 } from "@mui/material/styles";
-import { AuthProvider, OrderProvider } from "@/contexts";
+import { AuthProvider } from "@/contexts";
 import App from "@/app";
 
 const theme = createTheme({
   extend: {
-    drawerWidth: 280
+    drawerWidth: 280,
   },
   palette: {
     background: {
-      default: "#f2f2f2"
-    }
+      default: "#f2f2f2",
+    },
   },
   components: {
     MuiCssBaseline: {
       styleOverrides: {
         body: {
-          backgroundColor: "#f2f2f2"
-        }
-      }
-    }
-  }
+          backgroundColor: "#f2f2f2",
+        },
+      },
+    },
+  },
 });
 //console.log(theme);
 
@@ -35,11 +35,9 @@ function Root() {
       <ThemeProvider theme={theme}>
         <BrowserRouter>
           <AuthProvider>
-            <OrderProvider>
-              <CssBaseline />
-              <GlobalStyle />
-              <App />
-            </OrderProvider>
+            <CssBaseline />
+            <GlobalStyle />
+            <App />
           </AuthProvider>
         </BrowserRouter>
       </ThemeProvider>
