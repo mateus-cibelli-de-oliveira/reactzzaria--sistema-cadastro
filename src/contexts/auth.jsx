@@ -60,11 +60,13 @@ function AuthProvider({ children }) {
           console.log("[Auth] Perfil carregado:", userSnap.data());
         } else {
           // Se o usuário existir no Auth, mas não tiver documento no Firestore.
+          const safeName = currentUser.displayName?.trim();
+
           const fallbackProfile = {
-            name: currentUser.displayName ?? "",
+            name: safeName && safeName.length > 0 ? safeName : "Usuário",
             email: currentUser.email,
             role: "user"
-          };
+          }
 
           await setDoc(userRef, fallbackProfile);
           setProfile(fallbackProfile);
