@@ -9,6 +9,22 @@ export const GitHubButton = styled(Button).attrs({
     font-size: ${({ theme }) => theme.typography.h5.fontSize};
     padding: ${({ theme }) => theme.spacing(2)}px;
     text-transform: none;
+    background-color: #1a1a1a;
+
+    &:hover {
+      background-color: #000000;
+    }
+  }
+`;
+
+export const GoogleButton = styled(Button).attrs({
+  variant: "contained",
+  fullWidth: true,
+})`
+  && {
+    font-size: ${({ theme }) => theme.typography.h5.fontSize};
+    padding: ${({ theme }) => theme.spacing(2)}px;
+    text-transform: none;
   }
 `;
 

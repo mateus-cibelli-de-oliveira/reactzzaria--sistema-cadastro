@@ -8,6 +8,7 @@ import { HOME } from "@/routes.jsx";
 import { authCadastro, dbCadastro } from "@/services/firebase";
 
 import { loginWithGitHub } from "./github-auth";
+import { loginWithGoogle } from "./google-auth";
 import {
   loginWithEmail, registerWithEmail as registerWithEmailService
 } from "./email-auth";
@@ -159,6 +160,7 @@ function AuthProvider({ children }) {
         loading,
         firstName,
         loginWithGitHub,
+        loginWithGoogle,
         loginWithEmail,
         registerWithEmail,
         logout

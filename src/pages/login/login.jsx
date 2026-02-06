@@ -7,6 +7,7 @@ import {
 } from "@mui/material";
 import {
   GitHubButton,
+  GoogleButton,
   EmailButton,
   LoginButton,
   CancelButton
@@ -17,6 +18,7 @@ import MainLogo from "@/assets/logo-react-zzaria-cadastro.png";
 export default function Login() {
   const {
     loginWithGitHub,
+    loginWithGoogle,
     loginWithEmail,
     registerWithEmail
   } = useAuth();
@@ -90,6 +92,12 @@ export default function Login() {
               <GitHubButton onClick={loginWithGitHub}>
                 Entrar com o GitHub
               </GitHubButton>
+            </Grid>
+
+            <Grid item xs={12}>
+              <GoogleButton onClick={loginWithGoogle}>
+                Entrar com o Google
+              </GoogleButton>
             </Grid>
 
             <Grid
