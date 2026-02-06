@@ -74,7 +74,7 @@ export default function Login() {
         alignItems="stretch"
         justifyContent="center"
         minHeight="100vh"
-        gap={4}
+        gap={2}
       >
         <Grid
           item
