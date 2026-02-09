@@ -1,37 +1,17 @@
 import { useState } from "react";
 import styled from "styled-components";
-import {
-  Grid,
-  Link
-} from "@mui/material";
-import {
-  GitHubButton,
-  GoogleButton,
-  EmailButton
-} from "@/ui";
+import { Grid, Link } from "@mui/material";
+import { GitHubButton, GoogleButton, EmailButton } from "@/ui";
 import { useAuth } from "@/hooks";
 import FormLogin from "./form-login.jsx";
 import FormRegister from "./form-register.jsx";
 import MainLogo from "@/assets/logo-react-zzaria-cadastro.png";
 
 export default function Login() {
-  const {
-    loginWithGitHub,
-    loginWithGoogle
-  } = useAuth();
+  const { loginWithGitHub, loginWithGoogle } = useAuth();
 
   // controle de tela
   const [mode, setMode] = useState("initial");
-
-  // Reseta formulário e volta para a tela inicial
-  const handleCancel = () => {
-    setMode("initial");
-    setEmail("");
-    setPassword("");
-    setName("");
-    setConfirmPassword("");
-    setError("");
-  }
 
   return (
     <Container>
@@ -91,8 +71,13 @@ export default function Login() {
           </>
         )}
 
-        {mode === "login" && <FormLogin handleCancel={handleCancel} />}
-        {mode === "register" && <FormRegister handleCancel={handleCancel} />}
+        {mode === "login" && <FormLogin handleCancelMode={
+          () => setMode("initial")
+        } />}
+
+        {mode === "register" && <FormRegister handleCancelMode={
+          () => setMode("initial")
+        } />}
       </Grid>
     </Container>
   );

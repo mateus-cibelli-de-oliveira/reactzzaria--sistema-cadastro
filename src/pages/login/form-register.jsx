@@ -5,15 +5,26 @@ import { LoginButton, CancelButton } from "@/ui";
 import { HOME } from "@/routes";
 import { useAuth } from "@/hooks";
 
-export default function FormRegister({ handleCancel }) {
+export default function FormRegister({ handleCancelMode }) {
   const { registerWithEmail } = useAuth();
   const navigate = useNavigate();
 
+  // Estados internos do form
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+
+  // Limpa campos e erros
+  const handleCancel = () => {
+    setName("");
+    setEmail("");
+    setPassword("");
+    setConfirmPassword("");
+    setError("");
+    handleCancelMode?.();
+  }
 
   // Cadastro de usuário
   const handleRegister = async () => {

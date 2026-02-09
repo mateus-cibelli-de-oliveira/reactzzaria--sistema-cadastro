@@ -5,13 +5,22 @@ import { LoginButton, CancelButton } from "@/ui";
 import { HOME } from "@/routes";
 import { useAuth } from "@/hooks";
 
-export default function FormLogin({ handleCancel }) {
+export default function FormLogin({ handleCancelMode }) {
   const { loginWithEmail } = useAuth();
   const navigate = useNavigate();
 
+  // Estados internos do form
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+
+  // Limpa campos e erros
+  const handleCancel = () => {
+    setEmail("");
+    setPassword("");
+    setError("");
+    handleCancelMode?.();
+  }
 
   // Login com e-mail e senha
   const handleLogin = async () => {
