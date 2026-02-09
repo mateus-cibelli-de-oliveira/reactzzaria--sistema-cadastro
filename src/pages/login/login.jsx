@@ -56,6 +56,7 @@ export default function Login() {
     try {
       await loginWithEmail(email, password);
       setError("");
+      navigate(HOME);
     } catch (error) {
       switch (error.code) {
         case "auth/invalid-email":
@@ -94,6 +95,7 @@ export default function Login() {
     try {
       await registerWithEmail(name, email, password);
       setError("");
+      navigate(HOME);
     } catch (error) {
       if (error.code === "auth/email-already-in-use") {
         setError("Este e-mail já está cadastrado!");
