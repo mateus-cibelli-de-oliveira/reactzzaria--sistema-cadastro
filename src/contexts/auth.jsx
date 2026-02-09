@@ -2,11 +2,7 @@ import { createContext, useEffect, useState, useCallback, useMemo } from "react"
 import t from "prop-types";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
-
-import { HOME } from "@/routes.jsx";
 import { authCadastro, dbCadastro } from "@/services/firebase";
-
 import { loginWithGitHub } from "./github-auth";
 import { loginWithGoogle } from "./google-auth";
 import {
@@ -27,8 +23,6 @@ function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  const navigate = useNavigate();
 
   /**
    * Listener global de autenticação
@@ -75,9 +69,6 @@ function AuthProvider({ children }) {
           console.log("[Auth] Perfil fallback criado:", fallbackProfile);
         }
 
-        // Após detectar o login, envia o usuário para a rota principal.
-        navigate(HOME, { replace: true });
-
       } catch (error) {
         console.error("[Auth] ERRO AO CARREGAR PERFIL DO USUÁRIO:", error);
         setProfile(null);
@@ -87,7 +78,7 @@ function AuthProvider({ children }) {
     });
 
     return () => unsubscribe();
-  }, [navigate]);
+  }, []);
 
   /**
    * registerWithEmail

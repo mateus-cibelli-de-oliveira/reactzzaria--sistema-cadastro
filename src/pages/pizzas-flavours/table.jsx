@@ -68,16 +68,14 @@ function TablePizzasFlavours() {
 
               <TableCell>
                 <Grid container direction="column">
-                  {Object.entries(pizza.value).map(([sizeId, value]) => {
-                    const sizeName = pizzasSizes?.find(
-                      (s) => s.id === sizeId,
-                    )?.name;
+                  {Object.entries(pizza.value).map(([index, value]) => {
+                    const sizeName = pizzasSizes?.[index]?.name || "—";
 
                     return (
-                      <Grid key={sizeId} container alignItems="center">
+                      <Grid key={index} container alignItems="center">
                         <Grid item xs={6}>
-                          <Typography variant="body2" sx={{ pr: 1 }}>
-                            {sizeName || "—"}
+                          <Typography variant="body2" sx={{ pr: 0.5 }}>
+                            {sizeName} {"-"}
                           </Typography>
                         </Grid>
 

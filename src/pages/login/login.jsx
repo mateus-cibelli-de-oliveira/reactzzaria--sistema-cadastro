@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import {
   Grid,
@@ -12,6 +13,7 @@ import {
   LoginButton,
   CancelButton
 } from "@/ui";
+import { HOME } from "@/routes";
 import { useAuth } from "@/hooks";
 import MainLogo from "@/assets/logo-react-zzaria-cadastro.png";
 
@@ -22,6 +24,9 @@ export default function Login() {
     loginWithEmail,
     registerWithEmail
   } = useAuth();
+
+  // controle de rotas
+  const navigate = useNavigate();
 
   // controle de tela
   const [mode, setMode] = useState("initial"); // initial | login | register
@@ -38,6 +43,7 @@ export default function Login() {
   const handleLogin = async () => {
     try {
       await loginWithEmail(email, password);
+      navigate(HOME);
     } catch (error) {
       console.error("Erro ao realizar login:", error);
     }
@@ -52,6 +58,7 @@ export default function Login() {
 
     try {
       await registerWithEmail(name, email, password);
+      navigate(HOME);
     } catch (error) {
       console.error("Erro ao cadastrar usuário:", error);
     }
