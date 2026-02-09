@@ -5,6 +5,7 @@ import {
   Grid,
   TextField,
   Link,
+  Typography
 } from "@mui/material";
 import {
   GitHubButton,
@@ -39,28 +40,70 @@ export default function Login() {
   const [name, setName] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  // Login com email e senha
+  // controle de erros
+  const [error, setError] = useState("");
+
+  // Login com e-mail e senha
   const handleLogin = async () => {
+    setError("");
+
+    // Validação rápida antes de chamar o Firebase
+    if (!email || !password) {
+      setError("Por favor, preencha todos os campos!");
+      return;
+    }
+
     try {
       await loginWithEmail(email, password);
-      navigate(HOME);
+      setError("");
     } catch (error) {
-      console.error("Erro ao realizar login:", error);
+      switch (error.code) {
+        case "auth/invalid-email":
+          setError("E-mail inválido!");
+          break;
+        case "auth/user-not-found":
+          setError("Usuário não encontrado!");
+          break;
+        case "auth/wrong-password":
+          setError("Senha incorreta!");
+          break;
+        case "auth/invalid-credential":
+          setError("Credenciais inválidas! Verifique e tente novamente.");
+          break;
+        default:
+          setError("Erro ao tentar fazer login!");
+      }
     }
   }
 
   // Cadastro de usuário
   const handleRegister = async () => {
+    setError("");
+
+    // Validação rápida antes de chamar o Firebase
+    if (!name || !email || !password || !confirmPassword) {
+      setError("Por favor, preencha todos os campos!");
+      return;
+    }
+
     if (password !== confirmPassword) {
-      console.error("As senhas não conferem");
+      setError("As senhas não conferem!");
       return;
     }
 
     try {
       await registerWithEmail(name, email, password);
-      navigate(HOME);
+      setError("");
     } catch (error) {
-      console.error("Erro ao cadastrar usuário:", error);
+      if (error.code === "auth/email-already-in-use") {
+        setError("Este e-mail já está cadastrado!");
+      } else if (error.code === "auth/weak-password") {
+        setError("A senha precisa ter no mínimo 6 caracteres!");
+      } else if (error.code === "auth/invalid-email") {
+        setError("Digite um e-mail válido!");
+      } else {
+        setError("Erro ao cadastrar usuário!");
+      }
     }
   }
 
@@ -71,6 +114,7 @@ export default function Login() {
     setPassword("");
     setName("");
     setConfirmPassword("");
+    setError("");
   }
 
   return (
@@ -154,6 +198,12 @@ export default function Login() {
               />
             </Grid>
 
+            {error && (
+              <Grid item xs={12}>
+                <Typography color="error">{error}</Typography>
+              </Grid>
+            )}
+
             <Grid
               item
               xs={12}
@@ -215,6 +265,12 @@ export default function Login() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
             </Grid>
+
+            {error && (
+              <Grid item xs={12}>
+                <Typography color="error">{error}</Typography>
+              </Grid>
+            )}
 
             <Grid
               item
