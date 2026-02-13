@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Grid, Link } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import { GitHubButton, GoogleButton, EmailButton } from "@/ui";
 import { useAuth } from "@/hooks";
 import FormLogin from "./form-login.jsx";
@@ -8,10 +9,21 @@ import FormRegister from "./form-register.jsx";
 import MainLogo from "@/assets/logo-react-zzaria-cadastro.png";
 
 export default function Login() {
-  const { loginWithGitHub, loginWithGoogle } = useAuth();
+  const {
+    user, profile, loading, loginWithGitHub, loginWithGoogle
+  } = useAuth();
+  const navigate = useNavigate();
 
   // controle de tela
   const [mode, setMode] = useState("initial");
+
+  useEffect(() => {
+    if (loading) return;
+
+    if (user && profile) {
+      navigate("/", { replace: true });
+    }
+  }, [user, profile, loading, navigate]);
 
   return (
     <Container>
@@ -71,13 +83,13 @@ export default function Login() {
           </>
         )}
 
-        {mode === "login" && <FormLogin handleCancelMode={
-          () => setMode("initial")
-        } />}
+        {mode === "login" && (
+          <FormLogin handleCancelMode={() => setMode("initial")} />
+        )}
 
-        {mode === "register" && <FormRegister handleCancelMode={
-          () => setMode("initial")
-        } />}
+        {mode === "register" && (
+          <FormRegister handleCancelMode={() => setMode("initial")} />
+        )}
       </Grid>
     </Container>
   );
