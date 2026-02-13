@@ -1,6 +1,13 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import {
-  collection, doc, getDocs, updateDoc, query, orderBy, where
+  collection,
+  doc,
+  getDocs,
+  updateDoc,
+  query,
+  orderBy,
+  where,
+  serverTimestamp
 } from "firebase/firestore";
 import { useAuth } from "@/hooks";
 import { dbCadastro } from "@/services/firebase";
@@ -9,12 +16,15 @@ function useOrders() {
   const { user } = useAuth();
   const [orders, setOrders] = useState(null);
 
-  const status = useMemo(() => ({
-    pending: "pending",
-    inProgress: "inProgress",
-    outForDelivery: "outForDelivery",
-    delivered: "delivered"
-  }), []);
+  const status = useMemo(
+    () => ({
+      pending: "pending",
+      inProgress: "inProgress",
+      outForDelivery: "outForDelivery",
+      delivered: "delivered"
+    }),
+    []
+  );
 
   const getOrders = useCallback(async () => {
     const uid = user?.uid;
@@ -34,7 +44,7 @@ function useOrders() {
 
     const docs = querySnapshot.docs.map((doc) => ({
       id: doc.id,
-      ...doc.data(),
+      ...doc.data()
     }));
 
     const initialStatus = Object.keys(status).reduce((acc, key) => {
@@ -51,11 +61,20 @@ function useOrders() {
     setOrders(groupedOrders);
   }, [user, status]);
 
-  const updateOrder = useCallback(async ({ orderId, status }) => {
-    const orderRef = doc(dbCadastro, "orders", orderId);
-    await updateDoc(orderRef, { status });
-    await getOrders();
-  }, [getOrders]);
+  const updateOrder = useCallback(
+    async ({ orderId, status }) => {
+      const orderRef = doc(dbCadastro, "orders", orderId);
+
+      if (status === "delivered") {
+        await updateDoc(orderRef, { status, deliveredAt: serverTimestamp() });
+      } else {
+        await updateDoc(orderRef, { status });
+      }
+
+      await getOrders();
+    },
+    [getOrders]
+  );
 
   useEffect(() => {
     if (user) getOrders();

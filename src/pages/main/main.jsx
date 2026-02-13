@@ -21,6 +21,7 @@ import * as routes from "@/routes";
 const Orders = lazy(() => import("@/pages/orders"));
 const PizzasSizes = lazy(() => import("@/pages/pizzas-sizes"));
 const PizzasFlavours = lazy(() => import("@/pages/pizzas-flavours"));
+const OrdersHistory = lazy(() => import("@/pages/orders/orders-history"));
 
 const Main = () => {
   const { firstName, logout } = useAuth();
@@ -139,6 +140,11 @@ const menuItems = [
     label: "Pedidos",
     link: routes.HOME,
     element: Orders,
+  },
+  {
+    label: "Histórico de pedidos",
+    link: routes.ORDERS_HISTORY,
+    element: OrdersHistory,
   },
   {
     label: "Tamanhos de pizzas",

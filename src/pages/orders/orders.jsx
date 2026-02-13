@@ -25,152 +25,176 @@ function Orders() {
         type: status.pending,
         nextAction: status.inProgress,
         nextButtonTitle: "Em produção",
-        icon: DonutLarge,
+        icon: DonutLarge
       },
       {
         title: "Pedidos em produção",
         type: status.inProgress,
         nextAction: status.outForDelivery,
         nextButtonTitle: "Saiu para entrega",
-        icon: TwoWheeler,
+        icon: TwoWheeler
       },
       {
         title: "Saiu para entrega",
         type: status.outForDelivery,
         nextAction: status.delivered,
         nextButtonTitle: "Entregue",
-        icon: Check,
+        icon: Check
       },
       {
         title: "Pedidos finalizados",
-        type: status.delivered,
-      },
+        type: status.delivered
+      }
     ];
   }, [status]);
+
+  const deliveredToday = useMemo(() => {
+    const deliveredOrders = orders?.[status.delivered] || [];
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return deliveredOrders.filter((order) => {
+      const deliveredDate = order.deliveredAt?.toDate?.();
+
+      if (!deliveredDate) return false;
+
+      deliveredDate.setHours(0, 0, 0, 0);
+
+      return deliveredDate.getTime() === today.getTime();
+    });
+  }, [orders, status.delivered]);
 
   function getHour(date) {
     const options = {
       hour: "numeric",
-      minute: "numeric",
-    };
+      minute: "numeric"
+    }
     return Intl.DateTimeFormat("pt-BR", options).format(date);
   }
 
-  return allOrderStatus.map((orderStatus) => (
-    <TableContainer key={orderStatus.title}>
-      <TableTitle>{orderStatus.title}</TableTitle>
-      <Table>
-        <THead>
-          <TableRow>
-            <Th>
-              <Typography>Informações do pedido</Typography>
-            </Th>
+  return allOrderStatus.map((orderStatus) => {
+    const currentOrders =
+      orderStatus.type === status.delivered
+        ? deliveredToday
+        : orders?.[orderStatus.type];
 
-            {orderStatus.nextAction && (
-              <Th align="center">
-                <Typography>Mudar status</Typography>
-              </Th>
-            )}
-          </TableRow>
-        </THead>
-
-        <TableBody>
-          {orders?.[orderStatus.type]?.length === 0 && (
+    return (
+      <TableContainer key={orderStatus.title}>
+        <TableTitle>{orderStatus.title}</TableTitle>
+        <Table>
+          <THead>
             <TableRow>
-              <TableCell>
-                <Typography>Nenhum pedido com esse status.</Typography>
-              </TableCell>
+              <Th>
+                <Typography>Informações do pedido</Typography>
+              </Th>
+
+              {orderStatus.nextAction && (
+                <Th align="center">
+                  <Typography>Mudar status</Typography>
+                </Th>
+              )}
             </TableRow>
-          )}
+          </THead>
 
-          {orders?.[orderStatus.type]?.map((order) => {
-            const {
-              address,
-              number,
-              complement,
-              district,
-              code: cep,
-              city,
-              state,
-            } = order.address;
-
-            return (
-              <TableRow key={order.id}>
+          <TableBody>
+            {currentOrders?.length === 0 && (
+              <TableRow>
                 <TableCell>
-                  <div>
-                    <Subtitle>
-                      Horário do pedido: {getHour(order.createdAt.toDate())}
-                    </Subtitle>
-                  </div>
-
-                  <div>
-                    <Subtitle>Pedido:</Subtitle>
-
-                    <ul>
-                      {order.pizzas.map((pizza, index) => (
-                        <li key={index}>
-                          <Typography>
-                            {pizza.quantity}{" "}
-                            {singularOrPlural(
-                              pizza.quantity,
-                              "pizza",
-                              "pizzas"
-                            )}{" "}
-                            {pizza.size?.name?.toUpperCase()} de{" "}
-                            {pizza.flavours
-                              .map((flavour) => flavour.name)
-                              .reduce((acc, flavour, index, array) => {
-                                if (index === 0) {
-                                  return flavour;
-                                }
-
-                                if (index === array.length - 1) {
-                                  return `${acc} e ${flavour}`;
-                                }
-
-                                return `${acc}, ${flavour}`;
-                              }, "")}
-                          </Typography>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div>
-                    <Subtitle>Endereço de entrega:</Subtitle>
-
-                    <Typography>
-                      {address}, {number && `n° ${number}`}{" "}
-                      {complement && `, ${complement}`} <br />
-                      Bairro: {district} - CEP: {cep} <br />
-                      {city} / {state}
-                    </Typography>
-                  </div>
+                  <Typography>Nenhum pedido com esse status.</Typography>
                 </TableCell>
-
-                {orderStatus.nextAction && (
-                  <TableCell align="center">
-                    <Fab
-                      color="primary"
-                      title={`Mudar status para "${orderStatus.nextButtonTitle}"`}
-                      onClick={() =>
-                        updateOrder({
-                          orderId: order.id,
-                          status: orderStatus.nextAction,
-                        })
-                      }
-                    >
-                      <orderStatus.icon />
-                    </Fab>
-                  </TableCell>
-                )}
               </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  ));
+            )}
+
+            {currentOrders?.map((order) => {
+              const {
+                address,
+                number,
+                complement,
+                district,
+                code: cep,
+                city,
+                state
+              } = order.address;
+
+              return (
+                <TableRow key={order.id}>
+                  <TableCell>
+                    <div>
+                      <Subtitle>
+                        Horário do pedido: {getHour(order.createdAt.toDate())}
+                      </Subtitle>
+                    </div>
+
+                    <div>
+                      <Subtitle>Pedido:</Subtitle>
+
+                      <ul>
+                        {order.pizzas.map((pizza, index) => (
+                          <li key={index}>
+                            <Typography>
+                              {pizza.quantity}{" "}
+                              {singularOrPlural(
+                                pizza.quantity,
+                                "pizza",
+                                "pizzas"
+                              )}{" "}
+                              {pizza.size?.name?.toUpperCase()} de{" "}
+                              {pizza.flavours
+                                .map((flavour) => flavour.name)
+                                .reduce((acc, flavour, index, array) => {
+                                  if (index === 0) {
+                                    return flavour;
+                                  }
+
+                                  if (index === array.length - 1) {
+                                    return `${acc} e ${flavour}`;
+                                  }
+
+                                  return `${acc}, ${flavour}`;
+                                }, "")}
+                            </Typography>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div>
+                      <Subtitle>Endereço de entrega:</Subtitle>
+
+                      <Typography>
+                        {address}, {number && `n° ${number}`}{" "}
+                        {complement && `, ${complement}`} <br />
+                        Bairro: {district} - CEP: {cep} <br />
+                        {city} / {state}
+                      </Typography>
+                    </div>
+                  </TableCell>
+
+                  {orderStatus.nextAction && (
+                    <TableCell align="center">
+                      <Fab
+                        color="primary"
+                        title={`Mudar status para "${orderStatus.nextButtonTitle}"`}
+                        onClick={() =>
+                          updateOrder({
+                            orderId: order.id,
+                            status: orderStatus.nextAction,
+                          })
+                        }
+                      >
+                        <orderStatus.icon />
+                      </Fab>
+                    </TableCell>
+                  )}
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    );
+  });
 }
 
 const Subtitle = styled(Typography).attrs({
