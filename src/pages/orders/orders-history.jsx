@@ -1,14 +1,21 @@
-import { useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import styled from "styled-components";
 import {
-  Table, TableBody, TableCell, TableRow, Typography
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+  Typography
 } from "@mui/material";
 import { TableContainer, TableTitle, THead, Th } from "@/ui";
 import { useOrders } from "@/hooks";
 import { singularOrPlural } from "@/utils";
 
 function OrderHistory() {
-  const { orders, status } = useOrders();
+  const [historyOrders, setHistoryOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const { getOrdersHistory } = useOrders();
 
   function formatDate(date) {
     return Intl.DateTimeFormat("pt-BR", {
@@ -25,22 +32,30 @@ function OrderHistory() {
     }).format(date);
   }
 
+  useEffect(() => {
+    async function loadOrdersHistory() {
+      try {
+        setLoading(true);
+
+        const orders = await getOrdersHistory();
+        setHistoryOrders(orders);
+      } catch (error) {
+        console.error("[OrderHistory] Erro ao carregar histórico:", error);
+        setHistoryOrders([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadOrdersHistory();
+  }, [getOrdersHistory]);
+
   const groupedOrders = useMemo(() => {
-    const deliveredOrders = orders?.[status.delivered] || [];
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const pastOrders = deliveredOrders.filter((order) => {
+    return historyOrders.reduce((acc, order) => {
       const deliveredDate = order.deliveredAt?.toDate?.();
-      if (!deliveredDate) return false;
 
-      deliveredDate.setHours(0, 0, 0, 0);
-      return deliveredDate < today;
-    });
+      if (!deliveredDate) return acc;
 
-    return pastOrders.reduce((acc, order) => {
-      const deliveredDate = order.deliveredAt.toDate();
       const key = formatDate(deliveredDate);
 
       if (!acc[key]) acc[key] = [];
@@ -48,7 +63,7 @@ function OrderHistory() {
 
       return acc;
     }, {});
-  }, [orders, status]);
+  }, [historyOrders]);
 
   const sortedDates = useMemo(() => {
     return Object.keys(groupedOrders).sort((a, b) => {
@@ -61,6 +76,10 @@ function OrderHistory() {
       return dateB - dateA;
     });
   }, [groupedOrders]);
+
+  if (loading) {
+    return <Typography>Carregando histórico...</Typography>;
+  }
 
   return (
     <>
@@ -90,7 +109,7 @@ function OrderHistory() {
                   district,
                   code: cep,
                   city,
-                  state,
+                  state
                 } = order.address;
 
                 return (
@@ -98,7 +117,8 @@ function OrderHistory() {
                     <TableCell>
                       <div>
                         <Subtitle>
-                          Horário do pedido: {getHour(order.createdAt.toDate())}
+                          Horário do pedido:{" "}
+                          {getHour(order.createdAt.toDate())}
                         </Subtitle>
                       </div>
 
@@ -120,8 +140,11 @@ function OrderHistory() {
                                   .map((flavour) => flavour.name)
                                   .reduce((acc, flavour, index, array) => {
                                     if (index === 0) return flavour;
-                                    if (index === array.length - 1)
+
+                                    if (index === array.length - 1) {
                                       return `${acc} e ${flavour}`;
+                                    }
+
                                     return `${acc}, ${flavour}`;
                                   }, "")}
                               </Typography>
@@ -153,7 +176,7 @@ function OrderHistory() {
 }
 
 const Subtitle = styled(Typography).attrs({
-  variant: "button",
+  variant: "button"
 })`
   && {
     font-weight: bold;

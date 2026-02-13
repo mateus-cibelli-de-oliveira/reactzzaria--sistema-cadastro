@@ -61,6 +61,38 @@ function useOrders() {
     setOrders(groupedOrders);
   }, [user, status]);
 
+  const getOrdersHistory = useCallback(async () => {
+    const uid = user?.uid;
+
+    if (!uid) {
+      console.error("Usuário não autenticado");
+      return [];
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const thirtyDaysAgo = new Date(today);
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const historyQuery = query(
+      collection(dbCadastro, "orders"),
+      where("userId", "==", uid),
+      where("status", "==", status.delivered),
+      where("deliveredAt", ">=", thirtyDaysAgo),
+      orderBy("deliveredAt", "desc")
+    );
+
+    const querySnapshot = await getDocs(historyQuery);
+
+    const docs = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    return docs;
+  }, [user, status.delivered]);
+
   const updateOrder = useCallback(
     async ({ orderId, status }) => {
       const orderRef = doc(dbCadastro, "orders", orderId);
@@ -80,7 +112,7 @@ function useOrders() {
     if (user) getOrders();
   }, [user, getOrders]);
 
-  return { orders, status, updateOrder };
+  return { orders, status, updateOrder, getOrdersHistory }
 }
 
 export default useOrders;
